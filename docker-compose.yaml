@@ -150,7 +150,7 @@ services:
     environment:
       # db:5432 points to service db and its cointainer port
       API_URL: http://localhost:${TOOLBOX_SERVER_PORT}
-      ASSETS_URL: http://localhost:${TOOLBOX_SERVER_PORT}/
+      ASSETS_URL: http://localhost:${TOOLBOX_CLIENT_PORT}
     ports:
       - ${TOOLBOX_CLIENT_PORT}:80
 
