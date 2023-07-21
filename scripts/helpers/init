@@ -5,12 +5,9 @@ if [ ! -f .env ]; then
     # Copy .env.example to .env
     cp .env.example .env
     echo ".env file created from .env.example."
-else
-    echo ".env file already exists."
 fi
 
 # Ensure the logs directories exist
-
 mkdir -p logs
 cd logs
 mkdir -p postgres

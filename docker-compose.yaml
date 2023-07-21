@@ -128,3 +128,31 @@ services:
       CONNECT_GC_LOG_ENABLED: 'false'
       CONNECT_HEAP_OPTS: -Xms512M -Xmx512M
       CONNECT_LOG_LEVEL: info
+
+  toolbox_server:
+    image: ghcr.io/geovistory/toolbox-server:0.2.3
+    environment:
+      # db:5432 points to service db and its cointainer port
+      DATABASE_URL: postgres://postgres:local_pw@postgres:5432/toolbox_db
+      GEOV_EMAIL_ADDRESS: ${GEOV_EMAIL_ADDRESS}
+      GEOV_EMAIL_HOST: ${GEOV_EMAIL_HOST}
+      GEOV_EMAIL_PORT: ${GEOV_EMAIL_PORT}
+      GEOV_EMAIL_PASSWORD: ${GEOV_EMAIL_PASSWORD}
+      SERVER_URL: http://localhost:${TOOLBOX_SERVER_PORT}
+      CLIENT_URL: http://toolbox_client:4200
+      PORT: '3000'
+      HOST: '0.0.0.0'
+    ports:
+      - ${TOOLBOX_SERVER_PORT}:3000
+
+  toolbox_client:
+    image: ghcr.io/geovistory/toolbox-client:0.2.3
+    environment:
+      # db:5432 points to service db and its cointainer port
+      API_URL: http://localhost:${TOOLBOX_SERVER_PORT}
+      ASSETS_URL: http://localhost:${TOOLBOX_SERVER_PORT}/
+    ports:
+      - ${TOOLBOX_CLIENT_PORT}:80
+
+
+

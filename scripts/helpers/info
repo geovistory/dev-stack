@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# read env vars
+. .env
+
+echo Redpanda Console: http://localhost:$REDPANDA_CONSOLE_PORT
+
+echo Toolbox Server: http://localhost:$TOOLBOX_SERVER_PORT/explorer
+
+echo Toolbox Client: http://localhost:$TOOLBOX_CLIENT_PORT
