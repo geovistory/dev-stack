@@ -1,0 +1,130 @@
+version: '3.8'
+volumes:
+  postgis-data:
+  postgis-logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/logs/postgres
+      o: bind
+  redpanda: null
+
+networks:
+  redpanda_network:
+    driver: bridge
+
+services:
+  # Postgres Database Server with
+  # access postgres from host machine: postgres://postgres:local_pw@{DOCKER_IP}:${DOCKER_PG_HOST_PORT}
+  postgres:
+    build:
+      context: ./components/postgres
+    shm_size: 1g
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local_pw
+      GEOVISTORY_DB: toolbox_db
+    command: ${POSTGRES_COMMAND}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    restart: always
+    volumes:
+      - 'postgis-data:/var/lib/postgresql/data'
+      - 'postgis-logs:/logs'
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+    ports:
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
+    volumes:
+      - redpanda:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.2.5
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+        connect:
+          enabled: true
+          clusters:
+            - name: geov-connect-cluster
+              url: http://connect:8084
+    ports:
+      - ${REDPANDA_CONSOLE_PORT}:8080
+    networks:
+      - redpanda_network
+    depends_on:
+      - redpanda
+
+  connect:
+    build:
+      context: ./components/connect
+    hostname: connect
+    container_name: connect
+    networks:
+      - redpanda_network
+    platform: 'linux/amd64'
+    depends_on:
+      - redpanda
+    ports:
+      - '8084:8083'
+    environment:
+      CONNECT_CONFIGURATION: |
+        key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+        value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+        group.id=geov_connectors-cluster
+        offset.storage.topic=_internal_connectors_offsets
+        config.storage.topic=_internal_connectors_configs
+        status.storage.topic=_internal_connectors_status
+        config.storage.replication.factor=-1
+        offset.storage.replication.factor=-1
+        status.storage.replication.factor=-1
+        offset.flush.interval.ms=1000
+        producer.linger.ms=50
+        producer.batch.size=131072
+        listeners=HTTP://connect:8084
+      CONNECT_BOOTSTRAP_SERVERS: redpanda:9092
+      CONNECT_GC_LOG_ENABLED: 'false'
+      CONNECT_HEAP_OPTS: -Xms512M -Xmx512M
+      CONNECT_LOG_LEVEL: info
