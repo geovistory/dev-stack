@@ -31,6 +31,13 @@ services:
     volumes:
       - 'postgis-data:/var/lib/postgresql/data'
       - 'postgis-logs:/logs'
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/ready || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    networks:
+      - redpanda_network
 
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
@@ -106,8 +113,11 @@ services:
       - redpanda_network
     platform: 'linux/amd64'
     depends_on:
-      - redpanda
-      - postgres
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+
     ports:
       - '8083:8083'
     environment:
