@@ -22,10 +22,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$GEOVISTORY_DB" <<
 EOSQL
 
 echo Seed database
+chmod 0777 ./var/lib/postgresql/data/
 { # try
-    time pg_restore -j 4 --no-owner -d $GEOVISTORY_DB ./seed.data --verbose && echo ready! && touch ./tmp/ready
+    time pg_restore -j 4 --no-owner -d $GEOVISTORY_DB ./seed.data --verbose && echo ready! && touch ./var/lib/postgresql/data/ready
 } || { # catch
     # pg_restore will throw error: schema "public" already exists
     # we can ignore and mark container ready.
-    echo restored with error! && touch ./tmp/ready
+    echo restored with error! && touch ./var/lib/postgresql/data/ready
+
 }

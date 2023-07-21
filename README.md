@@ -11,7 +11,7 @@ bash scripts/build
 
 This should start all layers of the stack. 
 
-It takes some time to initialize the database. Observe the progres: 
+It takes 2-3 min to initialize the database. Observe the progres: 
 
 ```bash
 docker logs geov_dev-postgres-1 --follow
