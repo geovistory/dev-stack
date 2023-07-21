@@ -8,3 +8,7 @@ ADD /connectors/jdbc-postgres.tar /opt/kafka/redpanda-plugins
 ADD /connectors/rdf-kafka-sink-connector.tar /opt/kafka/redpanda-plugins
 # confluent avro converter
 ADD /converters/avro.tar /opt/kafka/redpanda-plugins
+
+COPY ./init.sh /
+
+CMD ["sh", "/init.sh"]
