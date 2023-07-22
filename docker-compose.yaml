@@ -7,7 +7,9 @@ volumes:
       type: none
       device: ${PWD}/logs/postgres
       o: bind
-  redpanda: null
+  redpanda1: null
+  redpanda2: null
+  redpanda3: null
 
 networks:
   redpanda_network:
@@ -39,33 +41,120 @@ services:
     networks:
       - redpanda_network
 
-  redpanda:
+  redpanda-1:
+    # build:
+    #   context: ./components/redpanda
     image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
     command:
       - redpanda start
       - --smp 1
       - --overprovisioned
+      - --node-id 1
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       # Address the broker advertises to clients that connect to the Kafka API.
       # Use the internal addresses to connect to the Redpanda brokers
       # from inside the same Docker network.
       # Use the external addresses to connect to the Redpanda brokers
       # from outside the Docker network.
-      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
       # Address the broker advertises to clients that connect to the HTTP Proxy.
-      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:18082
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
       # Redpanda brokers use the RPC API to communicate with each other internally.
-      - --rpc-addr redpanda:33145
-      - --advertise-rpc-addr redpanda:33145
+      - --rpc-addr redpanda-1:33145
+      - --advertise-rpc-addr redpanda-1:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
     ports:
       - 18081:18081
       - 18082:18082
       - 19092:19092
       - 19644:9644
     volumes:
-      - redpanda:/var/lib/redpanda/data
+      - redpanda1:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+  
+  redpanda-2:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 2
+      - --seeds "redpanda-1:33145" 
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-2:9093,external://localhost:19093
+      - --pandaproxy-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-2:8083,external://localhost:18083
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-2:33145
+      - --advertise-rpc-addr redpanda-2:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - 18083:18083
+      - 19093:19093
+    volumes:
+      - redpanda2:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redpanda-3:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 3
+      - --seeds "redpanda-1:33145" 
+      - --kafka-addr internal://0.0.0.0:9094,external://0.0.0.0:19094
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-3:9094,external://localhost:19094
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-3:8084,external://localhost:18084
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-3:33145
+      - --advertise-rpc-addr redpanda-3:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - 18084:18084
+      - 19094:19094
+    volumes:
+      - redpanda3:/var/lib/redpanda/data
     networks:
       - redpanda_network
     healthcheck:
@@ -84,14 +173,14 @@ services:
       CONFIG_FILEPATH: /tmp/config.yml
       CONSOLE_CONFIG_FILE: |
         kafka:
-          brokers: ["redpanda:9092"]
+          brokers: ["redpanda-1:9092","redpanda-2:9093","redpanda-3:9094"]
           schemaRegistry:
             enabled: true
-            urls: ["http://redpanda:8081"]
+            urls: ["http://redpanda-1:8081"]
         redpanda:
           adminApi:
             enabled: true
-            urls: ["http://redpanda:9644"]
+            urls: ["http://redpanda-1:9644"]
         connect:
           enabled: true
           clusters:
@@ -117,7 +206,6 @@ services:
         condition: service_healthy
       redpanda:
         condition: service_started
-
     ports:
       - '8083:8083'
     environment:
@@ -135,41 +223,41 @@ services:
         producer.linger.ms=50
         producer.batch.size=131072
         listeners=HTTP://connect:8083
-      CONNECT_BOOTSTRAP_SERVERS: redpanda:9092
+      CONNECT_BOOTSTRAP_SERVERS: redpanda-1:9092,redpanda-2:9093,redpanda-3:9094
       CONNECT_GC_LOG_ENABLED: 'false'
       CONNECT_HEAP_OPTS: -Xms512M -Xmx512M
       CONNECT_LOG_LEVEL: info
 
-  toolbox_server:
-    image: ghcr.io/geovistory/toolbox-server:0.2.3
-    environment:
-      # db:5432 points to service db and its cointainer port
-      DATABASE_URL: postgres://postgres:local_pw@postgres:5432/toolbox_db
-      GEOV_EMAIL_ADDRESS: ${GEOV_EMAIL_ADDRESS}
-      GEOV_EMAIL_HOST: ${GEOV_EMAIL_HOST}
-      GEOV_EMAIL_PORT: ${GEOV_EMAIL_PORT}
-      GEOV_EMAIL_PASSWORD: ${GEOV_EMAIL_PASSWORD}
-      SERVER_URL: http://localhost:${TOOLBOX_SERVER_PORT}
-      CLIENT_URL: http://toolbox_client:4200
-      PORT: '3000'
-      HOST: '0.0.0.0'
-    ports:
-      - ${TOOLBOX_SERVER_PORT}:3000
-    depends_on:
-      - postgres
-    networks:
-      - redpanda_network
+  # toolbox_server:
+  #   image: ghcr.io/geovistory/toolbox-server:0.2.3
+  #   environment:
+  #     # db:5432 points to service db and its cointainer port
+  #     DATABASE_URL: postgres://postgres:local_pw@postgres:5432/toolbox_db
+  #     GEOV_EMAIL_ADDRESS: ${GEOV_EMAIL_ADDRESS}
+  #     GEOV_EMAIL_HOST: ${GEOV_EMAIL_HOST}
+  #     GEOV_EMAIL_PORT: ${GEOV_EMAIL_PORT}
+  #     GEOV_EMAIL_PASSWORD: ${GEOV_EMAIL_PASSWORD}
+  #     SERVER_URL: http://localhost:${TOOLBOX_SERVER_PORT}
+  #     CLIENT_URL: http://toolbox_client:4200
+  #     PORT: '3000'
+  #     HOST: '0.0.0.0'
+  #   ports:
+  #     - ${TOOLBOX_SERVER_PORT}:3000
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - redpanda_network
 
-  toolbox_client:
-    image: ghcr.io/geovistory/toolbox-client:0.2.3
-    environment:
-      # db:5432 points to service db and its cointainer port
-      API_URL: http://localhost:${TOOLBOX_SERVER_PORT}
-      ASSETS_URL: http://localhost:${TOOLBOX_CLIENT_PORT}
-    ports:
-      - ${TOOLBOX_CLIENT_PORT}:80
+  # toolbox_client:
+  #   image: ghcr.io/geovistory/toolbox-client:0.2.3
+  #   environment:
+  #     # db:5432 points to service db and its cointainer port
+  #     API_URL: http://localhost:${TOOLBOX_SERVER_PORT}
+  #     ASSETS_URL: http://localhost:${TOOLBOX_CLIENT_PORT}
+  #   ports:
+  #     - ${TOOLBOX_CLIENT_PORT}:80
 
-  ###################################### Kafka Streams Apps ######################################
+  # ###################################### Kafka Streams Apps ######################################
 
   toolbox_streams_base_model:
     image: ghcr.io/geovistory/toolbox-streams-base-model-quarkus:0.1.0-pr-105.1
@@ -181,9 +269,9 @@ services:
       KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
       KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
       TS_STATE_DIR: '/kafka-streams-state'
-      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda:9092'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
       QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
-      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda:8081'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_base_model
       # Prefix of topics created by debezium
@@ -207,9 +295,9 @@ services:
       KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
       KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
       TS_STATE_DIR: '/kafka-streams-state'
-      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda:9092'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
       QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
-      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda:8081'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_field_changes
       # Prefix of topics created by debezium
@@ -233,9 +321,9 @@ services:
       KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
       KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
       TS_STATE_DIR: '/kafka-streams-state'
-      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda:9092'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
       QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
-      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda:8081'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_nodes
       # Prefix of topics created by debezium
@@ -249,3 +337,272 @@ services:
     depends_on:
       - connect
 
+  toolbox_streams_statement_subject:
+    image: ghcr.io/geovistory/toolbox-streams-statement-subject-quarkus:0.1.0-pr-86.2
+    environment:
+      JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_statement_subject
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_statement_subject
+      # Topics from ts_nodes
+      TS_TOPIC_NODES: ts_nodes_nodes
+      # Replication factor of created topics
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+
+
+  toolbox_streams_statement_object:
+    image: ghcr.io/geovistory/toolbox-streams-statement-object-quarkus:0.1.0-pr-86.2
+    environment:
+      JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_statement_object
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_statement_object
+      # Topics from ts_nodes
+      TS_TOPIC_NODES: ts_nodes_nodes
+      # Topics from app-0a-statement-subject
+      TS_TOPIC_STATEMENT_WITH_SUBJECT: ts_statement_subject_statement_with_subject
+
+      # Replication factor of created topics
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+  toolbox_streams_base_config:
+    image: ghcr.io/geovistory/toolbox-streams-base-config-quarkus:0.1.0-pr-86.2
+    environment:
+      JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_base_config
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_base_config
+      # Topics from ts-base-model
+      TS_TOPIC_ONTOME_PROPERTY: ts_base_model_ontome_property
+      TS_TOPIC_ONTOME_CLASS: ts_base_model_ontome_class
+      TS_TOPIC_ONTOME_PROPERTY_LABEL: ts_base_model_ontome_property_label
+      TS_TOPIC_ONTOME_CLASS_LABEL: ts_base_model_ontome_class_label
+
+      # Replication factor of created topics
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+
+  toolbox_streams_entity_label:
+    image: ghcr.io/geovistory/toolbox-streams-entity-label-quarkus:0.1.0-pr-103.0
+    environment:
+      JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity_label
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity_label
+      # Topics from app-0-statement-object
+      TS_TOPIC_STATEMENT_WITH_ENTITY: ts_statement_object_statement_with_entity
+      TS_TOPIC_STATEMENT_WITH_LITERAL: ts_statement_object_statement_with_literal
+      # Topics from app-1-base-config
+      TS_TOPIC_PROJECT_ENTITY_LABEL_CONFIG: ts_base_config_project_entity_label_config
+      TS_TOPIC_COMMUNITY_ENTITY_LABEL_CONFIG: ts_base_config_community_entity_label_config
+      # Replication factor of created topics
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+  toolbox_streams_analysis_statements:
+    image: ghcr.io/geovistory/toolbox-streams-analysis-statements-quarkus:0.1.0-pr-93.1
+    environment:
+      JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_analysis_statements
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_analysis_statements
+      # Topics from app-2-entity-label
+      TS_TOPIC_PROJECT_STATEMENT_WITH_ENTITY: ts_entity_label_project_statement_with_entity
+      TS_TOPIC_PROJECT_STATEMENT_WITH_LITERAL: ts_entity_label_project_statement_with_literal
+      # Replication factor of created topics
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+
+  toolbox_streams_entity:
+    image: ghcr.io/geovistory/toolbox-streams-entity-quarkus:0.1.0-pr-86.3
+    environment:
+      JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity
+      # Topics from app-0-base-model     
+      TS_TOPIC_ONTOME_CLASS_METADATA: ts_base_model_ontome_class_metadata
+      TS_TOPIC_HAS_TYPE_PROPERTY: ts_base_model_has_type_property
+      # Topics from app-1-base-config
+      TS_TOPIC_PROJECT_CLASS_LABEL: ts_base_config_project_class_label           
+      TS_TOPIC_COMMUNITY_CLASS_LABEL: ts_base_config_community_class_label
+      # Topics from app-2-entity-label
+      TS_TOPIC_PROJECT_ENTITY: ts_entity_label_project_entity
+      TS_TOPIC_PROJECT_TOP_OUTGOING_STATEMENTS: ts_entity_label_project_top_outgoing_statements
+      TS_TOPIC_COMMUNITY_ENTITY: ts_entity_label_community_toolbox_entity
+      TS_TOPIC_COMMUNITY_TOP_OUTGOING_STATEMENTS: ts_entity_label_community_toolbox_top_outgoing_statements
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+
+  toolbox_streams_fulltext:
+    image: ghcr.io/geovistory/toolbox-streams-fulltext-quarkus:0.1.0-pr-86.3
+    environment:
+      JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_fulltext
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_fulltext
+      # Topics from app-1-base-config
+      TS_TOPIC_PROJECT_PROPERTY_LABEL: ts_base_config_project_property_label
+      TS_TOPIC_COMMUNITY_PROPERTY_LABEL: ts_base_config_community_property_label
+      # Topics from app-2-entity-label
+      TS_TOPIC_PROJECT_ENTITY_WITH_LABEL_CONFIG: ts_entity_label_project_entity_with_label_config
+      TS_TOPIC_PROJECT_TOP_STATEMENTS: ts_entity_label_project_top_statements
+      TS_TOPIC_COMMUNITY_ENTITY_WITH_LABEL_CONFIG: ts_entity_label_community_toolbox_entity_with_label_config
+      TS_TOPIC_COMMUNITY_TOP_STATEMENTS: ts_entity_label_community_toolbox_top_statements
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
+
+
+  toolbox_streams_entity_preview:
+    image: ghcr.io/geovistory/toolbox-streams-entity-preview-quarkus:0.1.0-pr-86.2
+    environment:
+      JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
+      ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
+      ROCKSDB_TOTAL_MEMTABLE_MB: '200'
+      KAFKA_STREAMS_CACHE_MAX_BYTES_BUFFERING: '10485760'
+      KAFKA_STREAMS_COMMIT_INTERVAL_MS: '100' 
+      KAFKA_STREAMS_METRICS_RECORDING_LEVEL: DEBUG
+      TS_STATE_DIR: '/kafka-streams-state'
+      QUARKUS_KAFKA_STREAMS_BOOTSTRAP_SERVERS: 'http://redpanda-1:9092,http://redpanda-2:9093,http://redpanda-3:9094'
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_KEY: schema.registry.url
+      QUARKUS_KAFKA_STREAMS_SCHEMA_REGISTRY_URL: 'http://redpanda-1:8081'
+      # Application id
+      QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity_preview
+      # Prefix of topics created by debezium
+      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      # Prefix of topics created by this app
+      TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity_preview
+      # Topics from app-2-entity-label
+      TS_TOPIC_PROJECT_ENTITY: ts_entity_label_project_entity
+      TS_TOPIC_PROJECT_ENTITY_LABEL: ts_entity_label_project_entity_label
+      TS_TOPIC_COMMUNITY_ENTITY: ts_entity_label_community_toolbox_entity
+      TS_TOPIC_COMMUNITY_ENTITY_LABEL: ts_entity_label_community_toolbox_entity_label
+      # Topics from app-3-entity
+      TS_TOPIC_PROJECT_ENTITY_CLASS_LABEL: ts_entity_project_entity_class_label
+      TS_TOPIC_PROJECT_ENTITY_TYPE: ts_entity_project_entity_type
+      TS_TOPIC_PROJECT_ENTITY_TIME_SPAN: ts_entity_project_entity_time_span
+      TS_TOPIC_PROJECT_ENTITY_CLASS_METADATA: ts_entity_project_entity_class_metadata
+      TS_TOPIC_COMMUNITY_ENTITY_CLASS_LABEL: ts_entity_community_toolbox_entity_class_label
+      TS_TOPIC_COMMUNITY_ENTITY_TYPE: ts_entity_community_toolbox_entity_type
+      TS_TOPIC_COMMUNITY_ENTITY_TIME_SPAN: ts_entity_community_toolbox_entity_time_span
+      TS_TOPIC_COMMUNITY_ENTITY_CLASS_METADATA: ts_entity_community_toolbox_entity_class_metadata
+      # Topics from app-3-fulltext
+      TS_TOPIC_PROJECT_ENTITY_FULLTEXT: ts_fulltext_project_entity_fulltext
+      TS_TOPIC_COMMUNITY_ENTITY_FULLTEXT: ts_fulltext_community_toolbox_entity_fulltext
+
+      TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - redpanda_network
+    depends_on:
+      - connect
