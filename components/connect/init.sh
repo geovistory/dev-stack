@@ -12,7 +12,7 @@ while : ; do
   sleep 5 
 done
 
-echo -e "\n--\n+> Creating Data Generator source"
+echo -e "\n--\n+> Creating Postgres Source Connector"
 curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/posrgres-source/config \
     -d '{
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
@@ -48,4 +48,35 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "transforms.unwrap.delete.handling.mode": "rewrite",
     "errors.retry.timeout": -1
 }'
+
+
+
+echo -e "\n--\n+> Creating Postgres Sink Connector"
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/posrgres-sink/config \
+    -d '{
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": 1,
+    "connection.url": "jdbc:postgresql://postgres:5432/toolbox_db",
+    "connection.user": "postgres",
+    "connection.password": "local_pw",
+    "dialect.name": "PostgreSqlDatabaseDialect",
+    "insert.mode": "upsert",
+    "delete.enabled": true,
+    "table.name.format": "war.${topic}",
+    "pk.mode": "record_key",
+    "pk.fields": "" ,
+    "fields.whitelist": "",
+    "db.timezone": "UTC",
+    "topics": "ts_field_changes_project_field_change, ts_entity_preview_entity_preview, ts_analysis_statements_project_analysis_statement",
+    "auto.create": false,
+    "auto.evolve": false,
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://redpanda-1:8081",
+    "key.converter.enhanced.avro.schema.support": true,
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://redpanda-1:8081",
+    "value.converter.enhanced.avro.schema.support": true
+}'
+    
+
 sleep infinity
