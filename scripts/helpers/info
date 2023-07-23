@@ -3,6 +3,9 @@
 # read env vars
 . .env
 
+
+echo Postgres: http://localhost:$POSTGRES_PORT
+
 echo Redpanda Console: http://localhost:$REDPANDA_CONSOLE_PORT
 
 echo Toolbox Server: http://localhost:$TOOLBOX_SERVER_PORT/explorer
