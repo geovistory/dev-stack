@@ -1,15 +1,16 @@
 version: '3.8'
 volumes:
-  postgis-data:
   postgis-logs:
     driver: local
     driver_opts:
       type: none
       device: ${PWD}/logs/postgres
       o: bind
+  postgis-data: null
   redpanda1: null
   redpanda2: null
   redpanda3: null
+  fuseki: null
 
 networks:
   redpanda_network:
@@ -260,6 +261,20 @@ services:
       ASSETS_URL: http://localhost:${TOOLBOX_CLIENT_PORT}
     ports:
       - ${TOOLBOX_CLIENT_PORT}:80
+
+  fuseki:
+    build: 
+      context: ./components/fuseki
+    environment:
+      ADMIN_PASSWORD: "pw123"
+      JAVA_OPTIONS: "-Xmx1024m -Xms1024m"
+      SIS_DATA: '/fuseki/databases/apache-sis-1.2/data'
+    ports:
+      - ${FUSEKI_PORT}:3030
+    volumes:
+      - fuseki:/databases/apache-sis-1.2/data
+    networks:
+      - redpanda_network
 
   # ###################################### Kafka Streams Apps ######################################
 

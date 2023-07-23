@@ -49,8 +49,6 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "errors.retry.timeout": -1
 }'
 
-
-
 echo -e "\n--\n+> Creating Postgres Sink Connector"
 curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/posrgres-sink/config \
     -d '{
@@ -77,6 +75,28 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "value.converter.schema.registry.url": "http://redpanda-1:8081",
     "value.converter.enhanced.avro.schema.support": true
 }'
-    
+
+
+echo -e "\n--\n+> Creating RDF Sink Connector"
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-sink/config \
+    -d '{
+    "connector.class": "org.geovistory.kafka.sink.connector.rdf.HttpSinkConnector",
+    "tasks.max": 1,
+    "topics": "dev-rdf-test-topic",
+    "http.authorization.type": "static",
+    "http.headers.authorization": "admin:pw123",
+    "http.headers.content.type": "application/x-www-form-urlencoded",
+    "http.url": "http://fuseki:3030",
+    "http.endpoint": "api_v1_community_data",
+    "http.projects.endpoint": "api_v1_project_",
+    "batching.enabled": false,
+    "batch.max.size": 10,
+    "batch.separator": ".",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter.schema.registry.url": "http://redpanda-1:8081",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://redpanda-1:8081"
+}'    
+
 
 sleep infinity

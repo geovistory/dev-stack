@@ -4,10 +4,12 @@
 . .env
 
 
-echo Postgres: http://localhost:$POSTGRES_PORT
+echo "Postgres:          http://localhost:$POSTGRES_PORT"
 
-echo Redpanda Console: http://localhost:$REDPANDA_CONSOLE_PORT
+echo "Redpanda Console:  http://localhost:$REDPANDA_CONSOLE_PORT"
 
-echo Toolbox Server: http://localhost:$TOOLBOX_SERVER_PORT/explorer
+echo "Toolbox Server:    http://localhost:$TOOLBOX_SERVER_PORT/explorer"
 
-echo Toolbox Client: http://localhost:$TOOLBOX_CLIENT_PORT
+echo "Toolbox Client:    http://localhost:$TOOLBOX_CLIENT_PORT"
+
+echo "Fuseki:            http://localhost:$FUSEKI_PORT"

@@ -34,17 +34,28 @@ bash scripts/up
 
 ## Cleanup volumes
 
-`bash scripts/down` does not remove the volumes (storing the database etc.). 
+`bash scripts/down` does not remove the volumes (data of database etc.).
+It just stops the containers (and frees resources on your computer).
+Sometimes it is useful to start with a clean installation of the entire stack or one component.
+In this situation it is necessary to remove one ore more volumes.
 
-To clean up all data, list the volumes:
+To remove all volumes having "geov_dev" in the name, run:
 
 ```bash
-docker volume ls | grep geov_dev
+bash scripts/remove-volumes
 ```
 
-The following command deletes the postgres data:
+This command will not remove used volumes. To delete them, first stop the stack.
+
+To remove an individual volume you can first list all volumes:
 
 ```bash
-docker volume rm geov_dev_postgis-data
+docker volume ls -f "name=geov_dev"
+```
+
+And then remove the volume by its name (here fuseki):
+
+```bash
+docker volume rm geov_dev_fuseki
 ```
 

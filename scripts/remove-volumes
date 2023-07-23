@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# delete all volumes having "geov_dev" in the name.
+# if a volume is in use by a container, it will not be deleted.
+docker volume rm $(docker volume ls -qf "name=geov_dev")
