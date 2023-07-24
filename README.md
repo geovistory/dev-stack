@@ -1,5 +1,20 @@
 # dev-stack
-Developer repo for the local setup of the geovistory stack.
+Developer repo to setup the geovistory stack, consisting of:
+
+- Postgres Server (including seeded database for toolbox) 
+- 3 Kafka brokers with schema registry (redpanda)
+- Kafka connect (including Postgres source connector, Postgres sink connector, RDF sink connector)
+- Toolbox streams apps (10)
+- Toolbox server
+- Toolbox client
+- Fuseki
+
+## System requirements
+
+- Docker (and docker-compose)
+- 10 GB RAM assigned to docker
+- 4 CPUs assigned to docker
+- 100 GB disk space assigned to docker
 
 
 ## Build and start stack
@@ -17,6 +32,8 @@ It takes 2-3 min to initialize the database. Observe the progres:
 docker logs geov_dev-postgres-1 --follow
 ```
 See the status of the running containers in Docker Desktop (only on Mac/Win) or with `docker ps`.
+
+See the status of kafka connect and kafka streams in the Redpanda Console (find link in console after `bash scripts/build`).
 
 ## Stop stack
 Stop the stack without removing the containers:
