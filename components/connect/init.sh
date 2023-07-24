@@ -82,7 +82,7 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     -d '{
     "connector.class": "org.geovistory.kafka.sink.connector.rdf.HttpSinkConnector",
     "tasks.max": 1,
-    "topics": "dev-rdf-test-topic",
+    "topics": "rdf-test-topic",
     "http.authorization.type": "static",
     "http.headers.authorization": "admin:pw123",
     "http.headers.content.type": "application/x-www-form-urlencoded",
@@ -92,6 +92,7 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "batching.enabled": false,
     "batch.max.size": 10,
     "batch.separator": ".",
+    "schema.registry.url": "http://redpanda-1:8081",
     "key.converter": "io.confluent.connect.avro.AvroConverter",
     "key.converter.schema.registry.url": "http://redpanda-1:8081",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
