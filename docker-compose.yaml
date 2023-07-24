@@ -51,26 +51,26 @@ services:
       - --smp 1
       - --overprovisioned
       - --node-id 1
-      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${REDPANDA_1_PORT}
       # Address the broker advertises to clients that connect to the Kafka API.
       # Use the internal addresses to connect to the Redpanda brokers
       # from inside the same Docker network.
       # Use the external addresses to connect to the Redpanda brokers
       # from outside the Docker network.
-      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:19092
-      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:${REDPANDA_1_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${REDPANDA_PROXY_1_PORT}
       # Address the broker advertises to clients that connect to the HTTP Proxy.
-      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:18082
-      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:${REDPANDA_PROXY_1_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${REDPANDA_SCHEMA_REGISTRY_PORT}
       # Redpanda brokers use the RPC API to communicate with each other internally.
       - --rpc-addr redpanda-1:33145
       - --advertise-rpc-addr redpanda-1:33145
     #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
     #   - rpk cluster config set log_segment_size 16777216 
     ports:
-      - 18081:18081
-      - 18082:18082
-      - 19092:19092
+      - ${REDPANDA_SCHEMA_REGISTRY_PORT}:${REDPANDA_SCHEMA_REGISTRY_PORT}
+      - ${REDPANDA_PROXY_1_PORT}:${REDPANDA_PROXY_1_PORT}
+      - ${REDPANDA_1_PORT}:${REDPANDA_1_PORT}
       - 19644:9644
     restart: always
     volumes:
@@ -95,16 +95,16 @@ services:
       - --overprovisioned
       - --node-id 2
       - --seeds "redpanda-1:33145" 
-      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:${REDPANDA_2_PORT}
       # Address the broker advertises to clients that connect to the Kafka API.
       # Use the internal addresses to connect to the Redpanda brokers
       # from inside the same Docker network.
       # Use the external addresses to connect to the Redpanda brokers
       # from outside the Docker network.
-      - --advertise-kafka-addr internal://redpanda-2:9093,external://localhost:19093
-      - --pandaproxy-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      - --advertise-kafka-addr internal://redpanda-2:9093,external://localhost:${REDPANDA_2_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8083,external://0.0.0.0:${REDPANDA_PROXY_2_PORT}
       # Address the broker advertises to clients that connect to the HTTP Proxy.
-      - --advertise-pandaproxy-addr internal://redpanda-2:8083,external://localhost:18083
+      - --advertise-pandaproxy-addr internal://redpanda-2:8083,external://localhost:${REDPANDA_PROXY_2_PORT}
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
       # Redpanda brokers use the RPC API to communicate with each other internally.
       - --rpc-addr redpanda-2:33145
@@ -112,8 +112,8 @@ services:
     #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
     #   - rpk cluster config set log_segment_size 16777216 
     ports:
-      - 18083:18083
-      - 19093:19093
+      - ${REDPANDA_PROXY_2_PORT}:${REDPANDA_PROXY_2_PORT}
+      - ${REDPANDA_2_PORT}:19093
     restart: always
     volumes:
       - redpanda2:/var/lib/redpanda/data
@@ -137,16 +137,16 @@ services:
       - --overprovisioned
       - --node-id 3
       - --seeds "redpanda-1:33145" 
-      - --kafka-addr internal://0.0.0.0:9094,external://0.0.0.0:19094
+      - --kafka-addr internal://0.0.0.0:9094,external://0.0.0.0:${REDPANDA_3_PORT}
       # Address the broker advertises to clients that connect to the Kafka API.
       # Use the internal addresses to connect to the Redpanda brokers
       # from inside the same Docker network.
       # Use the external addresses to connect to the Redpanda brokers
       # from outside the Docker network.
-      - --advertise-kafka-addr internal://redpanda-3:9094,external://localhost:19094
-      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      - --advertise-kafka-addr internal://redpanda-3:9094,external://localhost:${REDPANDA_3_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:${REDPANDA_PROXY_3_PORT}
       # Address the broker advertises to clients that connect to the HTTP Proxy.
-      - --advertise-pandaproxy-addr internal://redpanda-3:8084,external://localhost:18084
+      - --advertise-pandaproxy-addr internal://redpanda-3:8084,external://localhost:${REDPANDA_PROXY_3_PORT}
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
       # Redpanda brokers use the RPC API to communicate with each other internally.
       - --rpc-addr redpanda-3:33145
@@ -154,8 +154,8 @@ services:
     #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
     #   - rpk cluster config set log_segment_size 16777216 
     ports:
-      - 18084:18084
-      - 19094:19094
+      - ${REDPANDA_PROXY_3_PORT}:${REDPANDA_PROXY_3_PORT}
+      - ${REDPANDA_3_PORT}:19094
     restart: always
     volumes:
       - redpanda3:/var/lib/redpanda/data

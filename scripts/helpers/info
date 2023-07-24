@@ -1,15 +1,22 @@
 #!/bin/bash
-
 # read env vars
 . .env
-
-
-echo "Postgres:          http://localhost:$POSTGRES_PORT"
-
-echo "Redpanda Console:  http://localhost:$REDPANDA_CONSOLE_PORT"
-
-echo "Toolbox Server:    http://localhost:$TOOLBOX_SERVER_PORT/explorer"
-
-echo "Toolbox Client:    http://localhost:$TOOLBOX_CLIENT_PORT"
-
-echo "Fuseki:            http://localhost:$FUSEKI_PORT"
+echo 
+echo "*************************************************************"
+echo "****************** Geovistory Dev Stack *********************"
+echo "*************************************************************"
+echo 
+echo "SERVICE                       URL"
+echo  
+echo "Postgres                      http://localhost:$POSTGRES_PORT"
+echo 
+echo "Toolbox Server API            http://localhost:$TOOLBOX_SERVER_PORT/explorer"
+echo "Toolbox Client                http://localhost:$TOOLBOX_CLIENT_PORT"
+echo 
+echo "Redpanda Console              http://localhost:$REDPANDA_CONSOLE_PORT"
+echo "Redpanda Bootstrap Servers    http://localhost:${REDPANDA_1_PORT} http://localhost:${REDPANDA_2_PORT} http://localhost:${REDPANDA_3_PORT}"
+echo "Redpanda Pandaproxy API       http://localhost:${REDPANDA_PROXY_1_PORT}/v1 http://localhost:${REDPANDA_PROXY_2_PORT}/v1 http://localhost:${REDPANDA_PROXY_3_PORT}/v1"
+echo "Redpanda Schema Registry API  http://localhost:${REDPANDA_SCHEMA_REGISTRY_PORT}/v1"
+echo 
+echo "Fuseki                        http://localhost:$FUSEKI_PORT"
+echo
