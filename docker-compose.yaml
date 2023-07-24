@@ -268,7 +268,7 @@ services:
     environment:
       ADMIN_PASSWORD: "pw123"
       JAVA_OPTIONS: "-Xmx1024m -Xms1024m"
-      SIS_DATA: '/fuseki/databases/apache-sis-1.2/data'
+      SIS_DATA: '/databases/apache-sis-1.2/data'
     ports:
       - ${FUSEKI_PORT}:3030
     volumes:
@@ -301,8 +301,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
   toolbox_streams_field_changes:
     image: ghcr.io/geovistory/toolbox-streams-field-change-quarkus:0.1.0-pr-103.0
@@ -327,8 +325,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
   toolbox_streams_nodes:
     image: ghcr.io/geovistory/toolbox-streams-nodes-quarkus:0.1.0-pr-86.2
@@ -353,8 +349,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
   toolbox_streams_statement_subject:
     image: ghcr.io/geovistory/toolbox-streams-statement-subject-quarkus:0.1.0-pr-86.2
@@ -381,8 +375,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
 
 
@@ -414,8 +406,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
   toolbox_streams_base_config:
     image: ghcr.io/geovistory/toolbox-streams-base-config-quarkus:0.1.0-pr-86.2
@@ -446,8 +436,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
 
   toolbox_streams_entity_label:
@@ -479,8 +467,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
   toolbox_streams_analysis_statements:
     image: ghcr.io/geovistory/toolbox-streams-analysis-statements-quarkus:0.1.0-pr-93.1
@@ -508,8 +494,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
 
   toolbox_streams_entity:
@@ -545,8 +529,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
 
   toolbox_streams_fulltext:
@@ -579,8 +561,6 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
 
 
   toolbox_streams_entity_preview:
@@ -623,5 +603,3 @@ services:
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - redpanda_network
-    depends_on:
-      - connect
