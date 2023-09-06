@@ -1,3 +1,5 @@
+# See https://docs.redpanda.com/current/get-started/quick-start/
+
 version: '3.8'
 volumes:
   postgis-logs:
@@ -84,7 +86,7 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
-  
+
   redpanda-2:
     # build:
     #   context: ./components/redpanda
@@ -113,7 +115,7 @@ services:
     #   - rpk cluster config set log_segment_size 16777216 
     ports:
       - ${REDPANDA_PROXY_2_PORT}:${REDPANDA_PROXY_2_PORT}
-      - ${REDPANDA_2_PORT}:19093
+      - ${REDPANDA_2_PORT}:${REDPANDA_2_PORT}
     restart: always
     volumes:
       - redpanda2:/var/lib/redpanda/data
@@ -126,6 +128,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
+    depends_on:
+      - redpanda-1
 
   redpanda-3:
     # build:
@@ -155,7 +159,7 @@ services:
     #   - rpk cluster config set log_segment_size 16777216 
     ports:
       - ${REDPANDA_PROXY_3_PORT}:${REDPANDA_PROXY_3_PORT}
-      - ${REDPANDA_3_PORT}:19094
+      - ${REDPANDA_3_PORT}:${REDPANDA_3_PORT}
     restart: always
     volumes:
       - redpanda3:/var/lib/redpanda/data
@@ -168,6 +172,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
+    depends_on:
+      - redpanda-1
 
   console:
     image: docker.redpanda.com/redpandadata/console:v2.2.5
@@ -195,7 +201,7 @@ services:
     networks:
       - redpanda_network
     depends_on:
-      - redpanda
+     - redpanda-1
 
   connect:
     build:
@@ -208,7 +214,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redpanda:
+      redpanda-1:
+        condition: service_started
+      redpanda-2:
+        condition: service_started
+      redpanda-3:
         condition: service_started
     ports:
       - '8083:8083'

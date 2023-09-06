@@ -1,0 +1,172 @@
+version: '3.8'
+volumes:
+  redpanda1: null
+  redpanda2: null
+  redpanda3: null
+
+networks:
+  redpanda_network:
+    driver: bridge
+
+services:
+  redpanda-1:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 1
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${REDPANDA_1_PORT}
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:${REDPANDA_1_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${REDPANDA_PROXY_1_PORT}
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:${REDPANDA_PROXY_1_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${REDPANDA_SCHEMA_REGISTRY_PORT}
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-1:33145
+      - --advertise-rpc-addr redpanda-1:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - ${REDPANDA_SCHEMA_REGISTRY_PORT}:${REDPANDA_SCHEMA_REGISTRY_PORT}
+      - ${REDPANDA_PROXY_1_PORT}:${REDPANDA_PROXY_1_PORT}
+      - ${REDPANDA_1_PORT}:${REDPANDA_1_PORT}
+      - 19644:9644
+    restart: always
+    volumes:
+      - redpanda1:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redpanda-2:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 2
+      - --seeds "redpanda-1:33145" 
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:${REDPANDA_2_PORT}
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-2:9093,external://localhost:${REDPANDA_2_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8083,external://0.0.0.0:${REDPANDA_PROXY_2_PORT}
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-2:8083,external://localhost:${REDPANDA_PROXY_2_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-2:33145
+      - --advertise-rpc-addr redpanda-2:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - ${REDPANDA_PROXY_2_PORT}:${REDPANDA_PROXY_2_PORT}
+      - ${REDPANDA_2_PORT}:${REDPANDA_2_PORT}
+    restart: always
+    volumes:
+      - redpanda2:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    depends_on:
+      - redpanda-1
+  redpanda-3:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 3
+      - --seeds "redpanda-1:33145" 
+      - --kafka-addr internal://0.0.0.0:9094,external://0.0.0.0:${REDPANDA_3_PORT}
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-3:9094,external://localhost:${REDPANDA_3_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:${REDPANDA_PROXY_3_PORT}
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-3:8084,external://localhost:${REDPANDA_PROXY_3_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-3:33145
+      - --advertise-rpc-addr redpanda-3:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - ${REDPANDA_PROXY_3_PORT}:${REDPANDA_PROXY_3_PORT}
+      - ${REDPANDA_3_PORT}:${REDPANDA_3_PORT}
+    restart: always
+    volumes:
+      - redpanda3:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    depends_on:
+          - redpanda-1
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.2.5
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda-1:9092","redpanda-2:9093","redpanda-3:9094"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda-1:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda-1:9644"]
+        connect:
+          enabled: true
+          clusters:
+            - name: geov-connect-cluster
+              url: http://connect:8083
+    ports:
+      - ${REDPANDA_CONSOLE_PORT}:8080
+    networks:
+      - redpanda_network
+    depends_on:
+      redpanda-1:
+        condition: service_started
+      redpanda-2:
+        condition: service_started
+      redpanda-3:
+        condition: service_started

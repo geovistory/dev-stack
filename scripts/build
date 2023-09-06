@@ -1,5 +1,6 @@
 #!/bin/bash
 
 bash ./scripts/helpers/init
-docker-compose -f ./docker-compose.yaml --project-name geov_dev up --build -d && \
+. .env
+docker-compose -f $DOCKER_COMPOSE_FILE --project-name geov_dev up --build -d && \
 bash ./scripts/helpers/info
