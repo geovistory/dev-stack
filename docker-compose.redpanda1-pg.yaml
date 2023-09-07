@@ -1,0 +1,155 @@
+# See https://docs.redpanda.com/current/get-started/quick-start/
+
+version: '3.8'
+volumes:
+  postgis-logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/logs/postgres
+      o: bind
+  postgis-data: null
+  redpanda1: null
+  fuseki: null
+
+networks:
+  redpanda_network:
+    driver: bridge
+
+services:
+  # Postgres Database Server with
+  # access postgres from host machine: postgres://postgres:local_pw@{DOCKER_IP}:${DOCKER_PG_HOST_PORT}
+  postgres:
+    build:
+      context: ./components/postgres
+    shm_size: 1g
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local_pw
+      GEOVISTORY_DB: toolbox_db
+    command: ${POSTGRES_COMMAND}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    restart: always
+    volumes:
+      - 'postgis-data:/var/lib/postgresql/data'
+      - 'postgis-logs:/logs'
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/lib/postgresql/data/ready || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    networks:
+      - redpanda_network
+
+
+  redpanda-1:
+    # build:
+    #   context: ./components/redpanda
+    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 1
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${REDPANDA_1_PORT}
+      # Address the broker advertises to clients that connect to the Kafka API.
+      # Use the internal addresses to connect to the Redpanda brokers
+      # from inside the same Docker network.
+      # Use the external addresses to connect to the Redpanda brokers
+      # from outside the Docker network.
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:${REDPANDA_1_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${REDPANDA_PROXY_1_PORT}
+      # Address the broker advertises to clients that connect to the HTTP Proxy.
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:${REDPANDA_PROXY_1_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${REDPANDA_SCHEMA_REGISTRY_PORT}
+      # Redpanda brokers use the RPC API to communicate with each other internally.
+      - --rpc-addr redpanda-1:33145
+      - --advertise-rpc-addr redpanda-1:33145
+    #   # Set the log segment size to 16MB instead of 128MB to save disk on local machine (16MB min. size per partition)
+    #   - rpk cluster config set log_segment_size 16777216 
+    ports:
+      - ${REDPANDA_SCHEMA_REGISTRY_PORT}:${REDPANDA_SCHEMA_REGISTRY_PORT}
+      - ${REDPANDA_PROXY_1_PORT}:${REDPANDA_PROXY_1_PORT}
+      - ${REDPANDA_1_PORT}:${REDPANDA_1_PORT}
+      - 19644:9644
+    restart: always
+    volumes:
+      - redpanda1:/var/lib/redpanda/data
+    networks:
+      - redpanda_network
+    healthcheck:
+      test:
+        ['CMD-SHELL', "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+  
+
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.2.5
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda-1:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda-1:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda-1:9644"]
+        connect:
+          enabled: true
+          clusters:
+            - name: geov-connect-cluster
+              url: http://connect:8083
+    ports:
+      - ${REDPANDA_CONSOLE_PORT}:8080
+    networks:
+      - redpanda_network
+    depends_on:
+      - redpanda-1
+
+  connect:
+    build:
+      context: ./components/connect
+    hostname: connect
+    container_name: connect
+    networks:
+      - redpanda_network
+    platform: 'linux/amd64'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda-1:
+        condition: service_started
+      redpanda-2:
+        condition: service_started
+      redpanda-3:
+        condition: service_started
+    ports:
+      - '8083:8083'
+    environment:
+      CONNECT_CONFIGURATION: |
+        key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+        value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+        group.id=geov_connectors-cluster
+        offset.storage.topic=_internal_connectors_offsets
+        config.storage.topic=_internal_connectors_configs
+        status.storage.topic=_internal_connectors_status
+        config.storage.replication.factor=-1
+        offset.storage.replication.factor=-1
+        status.storage.replication.factor=-1
+        offset.flush.interval.ms=1000
+        producer.linger.ms=50
+        producer.batch.size=131072
+        listeners=HTTP://connect:8083
+      CONNECT_BOOTSTRAP_SERVERS: redpanda-1:9092
+      CONNECT_GC_LOG_ENABLED: 'false'
+      CONNECT_HEAP_OPTS: -Xms512M -Xmx512M
+      CONNECT_LOG_LEVEL: info
