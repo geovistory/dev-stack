@@ -99,5 +99,4 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "value.converter.schema.registry.url": "http://redpanda-1:8081"
 }'    
 
-
 sleep infinity
