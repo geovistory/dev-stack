@@ -13,7 +13,7 @@ while : ; do
 done
 
 echo -e "\n--\n+> Creating Postgres Source Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/posrgres-source/config \
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/postgres-source/config \
     -d '{
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": 1,
@@ -50,7 +50,7 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
 }'
 
 echo -e "\n--\n+> Creating Postgres Sink Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/posrgres-sink/config \
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/postgres-sink/config \
     -d '{
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "tasks.max": 1,
@@ -78,11 +78,11 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
 
 
 echo -e "\n--\n+> Creating RDF Sink Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-sink/config \
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-fuseki-sink/config \
     -d '{
     "connector.class": "org.geovistory.kafka.sink.connector.rdf.HttpSinkConnector",
     "tasks.max": 1,
-    "topics": "rdf-test-topic",
+    "topics": "ts_rdf_project_rdf",
     "http.authorization.type": "static",
     "http.headers.authorization": "admin:pw123",
     "http.headers.content.type": "application/x-www-form-urlencoded",
