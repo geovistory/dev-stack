@@ -60,6 +60,7 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "dialect.name": "PostgreSqlDatabaseDialect",
     "insert.mode": "upsert",
     "delete.enabled": true,
+    "table.types": "PARTITIONED TABLE,TABLE",
     "table.name.format": "war.${topic}",
     "pk.mode": "record_key",
     "pk.fields": "" ,
