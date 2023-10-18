@@ -79,7 +79,7 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
 
 
 echo -e "\n--\n+> Creating RDF Sink Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-fuseki-sink/config \
+curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-fuseki-sink-9/config \
     -d '{
     "connector.class": "org.geovistory.kafka.sink.connector.rdf.HttpSinkConnector",
     "tasks.max": 1,
@@ -97,7 +97,8 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "key.converter": "io.confluent.connect.avro.AvroConverter",
     "key.converter.schema.registry.url": "http://redpanda-1:8081",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
-    "value.converter.schema.registry.url": "http://redpanda-1:8081"
+    "value.converter.schema.registry.url": "http://redpanda-1:8081",
+    "consumer.override.max.poll.records": 10000
 }'    
 
 sleep infinity

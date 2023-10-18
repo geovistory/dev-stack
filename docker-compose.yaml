@@ -47,7 +47,7 @@ services:
   redpanda-1:
     # build:
     #   context: ./components/redpanda
-    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.12
     command:
       - redpanda start
       - --smp 1
@@ -90,7 +90,7 @@ services:
   redpanda-2:
     # build:
     #   context: ./components/redpanda
-    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.12
     command:
       - redpanda start
       - --smp 1
@@ -134,7 +134,7 @@ services:
   redpanda-3:
     # build:
     #   context: ./components/redpanda
-    image: docker.redpanda.com/redpandadata/redpanda:v23.1.13
+    image: docker.redpanda.com/redpandadata/redpanda:v23.2.12
     command:
       - redpanda start
       - --smp 1
@@ -243,7 +243,7 @@ services:
       CONNECT_LOG_LEVEL: info
 
   toolbox_server:
-    image: ghcr.io/geovistory/toolbox-server:0.2.7
+    image: ghcr.io/geovistory/toolbox-server:0.4.0
     environment:
       # db:5432 points to service db and its cointainer port
       DATABASE_URL: postgres://postgres:local_pw@postgres:5432/toolbox_db
@@ -264,7 +264,7 @@ services:
       - redpanda_network
 
   toolbox_client:
-    image: ghcr.io/geovistory/toolbox-client:0.2.7
+    image: ghcr.io/geovistory/toolbox-client:0.4.0
     environment:
       # db:5432 points to service db and its cointainer port
       API_URL: http://localhost:${TOOLBOX_SERVER_PORT}
@@ -626,7 +626,8 @@ services:
       - redpanda_network
 
   toolbox_streams_rdf:
-    image: ghcr.io/geovistory/toolbox-streams-rdf-serializer-quarkus:0.1.0-pr-114.0
+    #image: app-rdf
+    image: ghcr.io/geovistory/toolbox-streams-rdf-serializer-quarkus:0.1.0-pr-121.1
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -650,6 +651,10 @@ services:
       # Topics from app-2-entity-label
       TS_TOPIC_PROJECT_STATEMENT_WITH_ENTITY: ts_entity_label_project_statement_with_entity
       TS_TOPIC_PROJECT_STATEMENT_WITH_LITERAL: ts_entity_label_project_statement_with_literal
+      TS_TOPIC_PROJECT_ENTITY_LABEL: ts_entity_label_project_entity_label
+      TS_TOPIC_ONTOME_PROPERTY_LABEL: ts_base_model_ontome_property_label
+      
+      TS_TOPIC_PROJECTS_PROJECT: dev.projects.project
 
       TS_OUTPUT_TOPIC_REPLICATION_FACTOR: 1
     networks:
