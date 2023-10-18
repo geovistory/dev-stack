@@ -2,6 +2,9 @@
 
 touch ./tmp/init
 
+echo setup debugger
+echo shared_preload_libraries = 'plugin_debugger' >> /var/lib/postgresql/data/postgresql.conf 
+
 # Wait for PostgreSQL to start
 wait_postgresql() {
     while ! pg_isready -q; do
@@ -20,6 +23,13 @@ echo Create postgis extension
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$GEOVISTORY_DB" <<-EOSQL
     CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 EOSQL
+
+echo Create debug extension
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$GEOVISTORY_DB" <<-EOSQL
+    CREATE EXTENSION pldbgapi;
+EOSQL
+
+# touch ./var/lib/postgresql/data/ready
 
 echo Seed database
 chmod 0777 ./var/lib/postgresql/data/
