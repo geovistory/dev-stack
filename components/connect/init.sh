@@ -3,18 +3,18 @@
 #
 # Wait for Kafka Connect listener
 echo "Waiting for Kafka Connect to start listening on localhost ⏳"
-while : ; do
+while :; do
   curl_status=$(curl -s -o /dev/null -w %{http_code} http://connect:8083/connectors)
   echo -e $(date) " Kafka Connect listener HTTP state: " $curl_status " (waiting for 200)"
-  if [ $curl_status -eq 200 ] ; then
+  if [ $curl_status -eq 200 ]; then
     break
   fi
-  sleep 5 
+  sleep 5
 done
 
 echo -e "\n--\n+> Creating Postgres Source Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/postgres-source/config \
-    -d '{
+curl -s -X PUT -H "Content-Type:application/json" http://connect:8083/connectors/postgres-source/config \
+  -d '{
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": 1,
     "database.hostname": "postgres",
@@ -50,8 +50,8 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
 }'
 
 echo -e "\n--\n+> Creating Postgres Sink Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/postgres-sink/config \
-    -d '{
+curl -s -X PUT -H "Content-Type:application/json" http://connect:8083/connectors/postgres-sink/config \
+  -d '{
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:postgresql://postgres:5432/toolbox_db",
@@ -74,13 +74,13 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "key.converter.enhanced.avro.schema.support": true,
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://redpanda-1:8081",
-    "value.converter.enhanced.avro.schema.support": true
+    "value.converter.enhanced.avro.schema.support": true,
+    "errors.retry.timeout": -1
 }'
 
-
 echo -e "\n--\n+> Creating RDF Sink Connector"
-curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connectors/rdf-fuseki-sink-9/config \
-    -d '{
+curl -s -X PUT -H "Content-Type:application/json" http://connect:8083/connectors/rdf-fuseki-sink-9/config \
+  -d '{
     "connector.class": "org.geovistory.kafka.sink.connector.rdf.HttpSinkConnector",
     "tasks.max": 1,
     "topics": "ts_rdf_project_rdf",
@@ -98,7 +98,8 @@ curl -s -X PUT -H  "Content-Type:application/json" http://connect:8083/connector
     "key.converter.schema.registry.url": "http://redpanda-1:8081",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://redpanda-1:8081",
-    "consumer.override.max.poll.records": 10000
-}'    
+    "consumer.override.max.poll.records": 10000,
+    "errors.retry.timeout": -1
+}'
 
 sleep infinity

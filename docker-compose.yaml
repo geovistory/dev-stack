@@ -242,6 +242,15 @@ services:
       CONNECT_HEAP_OPTS: -Xms512M -Xmx512M
       CONNECT_LOG_LEVEL: info
 
+  connect-restarter:
+    build:
+      context: ./components/connect-restarter
+    networks:
+      - redpanda_network
+    platform: 'linux/amd64'
+    environment:
+      KAFKA_CONNECT_URL: http://connect:8083
+
   toolbox_server:
     image: ghcr.io/geovistory/toolbox-server:0.5.3
     environment:
