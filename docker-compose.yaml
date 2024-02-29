@@ -244,7 +244,7 @@ services:
 
   connect-restarter:
     build:
-      context: ./components/connect-restarter
+      context: ./components/kafka-connect-restarter
     networks:
       - redpanda_network
     platform: 'linux/amd64'

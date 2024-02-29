@@ -5,7 +5,7 @@
 export PATH=$PATH:/usr/local/bin/
 
 # List current connectors and status
-echo CONNECTORS STATUS:
+echo $KAFKA_CONNECT_URL CONNECTORS STATUS:
 curl -s "$KAFKA_CONNECT_URL/connectors?expand=info&expand=status" |
   jq '. | to_entries[] | [ .value.info.type, .key, .value.status.connector.state,.value.status.tasks[].state,.value.info.config."connector.class"]|join(":|:")' |
   column -s : -t | sed 's/\"//g' | sort
