@@ -34,7 +34,7 @@ curl -s -X PUT -H "Content-Type:application/json" http://connect:8083/connectors
     "topic.creation.default.partitions": 4,
     "topic.creation.default.cleanup.policy": "compact",
     "topic.creation.default.compression.type": "lz4",
-    "topic.prefix": "dev",
+    "topic.prefix": "ts",
     "publication.autocreate.mode": "filtered",
     "decimal.handling.mode": "double",
     "key.converter": "io.confluent.connect.avro.AvroConverter",

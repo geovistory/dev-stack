@@ -314,7 +314,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_base_model
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_base_model
       # Replication factor of created topics
@@ -339,7 +339,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_field_changes
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_field_changes
       # Replication factor of created topics
@@ -364,7 +364,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_nodes
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_nodes
       # Replication factor of created topics
@@ -389,7 +389,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_statement_subject
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_statement_subject
       # Topics from ts_nodes
@@ -418,7 +418,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_statement_object
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_statement_object
       # Topics from ts_nodes
@@ -448,7 +448,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_base_config
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_base_config
       # Topics from ts-base-model
@@ -480,7 +480,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity_label
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity_label
       # Topics from app-0-statement-object
@@ -511,7 +511,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_analysis_statements
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_analysis_statements
       # Topics from app-2-entity-label
@@ -540,7 +540,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity
       # Topics from app-0-base-model     
@@ -576,7 +576,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_fulltext
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_fulltext
       # Topics from app-1-base-config
@@ -609,7 +609,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_entity_preview
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_entity_preview
       # Topics from app-2-entity-label
@@ -652,7 +652,7 @@ services:
       # Application id
       QUARKUS_KAFKA_STREAMS_APPLICATION_ID: ts_rdf
       # Prefix of topics created by debezium
-      TS_INPUT_TOPIC_NAME_PREFIX: 'dev'
+      TS_INPUT_TOPIC_NAME_PREFIX: 'ts'
       # Prefix of topics created by this app
       TS_OUTPUT_TOPIC_NAME_PREFIX: ts_rdf
       # Topics from app-1-base-config
