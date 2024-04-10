@@ -298,7 +298,7 @@ services:
   # ###################################### Kafka Streams Apps ######################################
 
   toolbox_streams_base_model:
-    image: ghcr.io/geovistory/toolbox-streams-base-model-quarkus:0.1.0-pr-105.1
+    image: ghcr.io/geovistory/toolbox-streams-base-model-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -323,7 +323,7 @@ services:
       - redpanda_network
 
   toolbox_streams_field_changes:
-    image: ghcr.io/geovistory/toolbox-streams-field-change-quarkus:0.1.0-pr-103.0
+    image: ghcr.io/geovistory/toolbox-streams-field-change-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -348,7 +348,7 @@ services:
       - redpanda_network
 
   toolbox_streams_nodes:
-    image: ghcr.io/geovistory/toolbox-streams-nodes-quarkus:0.1.0-pr-86.2
+    image: ghcr.io/geovistory/toolbox-streams-nodes-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -373,7 +373,7 @@ services:
       - redpanda_network
 
   toolbox_streams_statement_subject:
-    image: ghcr.io/geovistory/toolbox-streams-statement-subject-quarkus:0.1.0-pr-86.2
+    image: ghcr.io/geovistory/toolbox-streams-statement-subject-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -402,7 +402,7 @@ services:
 
 
   toolbox_streams_statement_object:
-    image: ghcr.io/geovistory/toolbox-streams-statement-object-quarkus:0.1.0-pr-86.2
+    image: ghcr.io/geovistory/toolbox-streams-statement-object-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -432,7 +432,7 @@ services:
       - redpanda_network
 
   toolbox_streams_base_config:
-    image: ghcr.io/geovistory/toolbox-streams-base-config-quarkus:0.1.0-pr-86.2
+    image: ghcr.io/geovistory/toolbox-streams-base-config-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms256m -Xmx1024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -464,7 +464,7 @@ services:
 
 
   toolbox_streams_entity_label:
-    image: ghcr.io/geovistory/toolbox-streams-entity-label-quarkus:0.1.0-pr-103.0
+    image: ghcr.io/geovistory/toolbox-streams-entity-label-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -495,7 +495,7 @@ services:
       - redpanda_network
 
   toolbox_streams_analysis_statements:
-    image: ghcr.io/geovistory/toolbox-streams-analysis-statements-quarkus:0.1.0-pr-93.1
+    image: ghcr.io/geovistory/toolbox-streams-analysis-statements-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -524,7 +524,7 @@ services:
 
 
   toolbox_streams_entity:
-    image: ghcr.io/geovistory/toolbox-streams-entity-quarkus:0.1.0-pr-86.3
+    image: ghcr.io/geovistory/toolbox-streams-entity-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -560,7 +560,7 @@ services:
 
 
   toolbox_streams_fulltext:
-    image: ghcr.io/geovistory/toolbox-streams-fulltext-quarkus:0.1.0-pr-86.3
+    image: ghcr.io/geovistory/toolbox-streams-fulltext-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -593,7 +593,7 @@ services:
 
 
   toolbox_streams_entity_preview:
-    image: ghcr.io/geovistory/toolbox-streams-entity-preview-quarkus:0.1.0-pr-86.2
+    image: ghcr.io/geovistory/toolbox-streams-entity-preview-quarkus:0.1.0-pr-135.0
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
@@ -636,7 +636,7 @@ services:
 
   toolbox_streams_rdf:
     #image: app-rdf
-    image: ghcr.io/geovistory/toolbox-streams-rdf-serializer-quarkus:0.1.0-pr-126.0
+    image: ghcr.io/geovistory/toolbox-streams-rdf-serializer-quarkus:0.1.0-pr-133.1
     environment:
       JDK_JAVA_OPTIONS: -Xms512m -Xmx2024m
       ROCKSDB_TOTAL_OFF_HEAP_MB: '2000'
